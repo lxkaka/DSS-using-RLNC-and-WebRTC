@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Peerjs send message simple example</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+    <script type="text/javascript" src="../peer.js"></script>
+    <script>
+        // this is a very simple simple to use peerjs send message P2P
+        var receiveBox = null;
+
+        function startup(){
+            receiveBox = document.getElementById('receivebox');
+        }
+        // create PeerJs object
+        var peer = new Peer('999',{key: 's2ad2nr1v1x7p66r', debug: 3});
+
+        peer.on('open', function(){
+            $('my-id').text(peer.id);
+        });
+
+        //receive the connection
+        peer.on('connection', function(conn){
+            conn.on('open', function(){
+                //receive message
+                conn.on('data', function(data){
+                    console.log('Received',data);
+                    //return data;
+
+                    var text = document.createElement('p');
+                    var txtNode = document.createTextNode(data);
+                    text.appendChild(txtNode);
+                    receiveBox.appendChild(text);
+
+                });
+            });
+
+        });
+
+        // Set up an event listener which will run the startup
+        // function once the page is done loading.
+
+        window.addEventListener('load', startup , false);
+
+
+
+
+    </script>
+
+
+</head>
+<body>
+ <h1>Receive message simple example</h1>
+
+ <div class="messagebox" id="receivebox">
+     <p>Received message:</p>
+
+ </div>
+
+</body>
+</html>

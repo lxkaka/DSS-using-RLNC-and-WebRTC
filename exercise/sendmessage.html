@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Peerjs send message simple example</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+    <script type="text/javascript" src="../peer.js"></script>
+    <script>
+        // this is a very simple simple to use peerjs send message P2P
+        var sendButton = null;
+        var messageInputBox = null;
+
+
+        //Set things up, connect event listeners
+        function startup() {
+            sendButton = document.getElementById('sendButton');
+            messageInputBox = document.getElementById('message');
+
+            var conn = connectPeer();
+
+            //Set event listeners for user interface widgets
+            sendButton.addEventListener('click', function(){
+                var message = messageInputBox.value;
+                console.log(message);
+                conn.send(message);
+            },false)
+        }
+
+        // create local peer and connect to the remote peer
+       function connectPeer() {
+           // create PeerJs object
+           var peer = new Peer({key: 's2ad2nr1v1x7p66r', debug: 3});
+
+           peer.on('open', function() {
+               $('my-id').text(peer.id);
+           });
+
+           //connect the destination peer
+           var conn = peer.connect('999');
+
+           //function sendMessage(){
+           conn.on('open', function() {
+                   var message = '';
+                   //send message
+                   conn.send(message);
+               })
+           return conn;
+
+           }
+
+        // Clear the input box and re-focus it, so that we're
+        // ready for the next message.
+
+        //messageInputBox.value = "";
+        //messageInputBox.focus();
+        // Set up an event listener which will run the startup
+        // function once the page is done loading.
+
+        window.addEventListener('load', startup, false);
+
+
+
+    </script>
+
+
+</head>
+<body>
+ <h1>Send message simple example</h1>
+
+ <div class="messagebox">
+     <label for="message">Enter a message:
+         <input type="text" name="message" id="message" placeholder="Message text"
+                inputmode="latin" size=60 maxlength=120>
+     </label>
+     <button id="sendButton" name="sendButton" class="buttonright">
+         Send
+     </button>
+ </div>
+
+
+
+</body>
+
+</html>
