@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Read file example</title>
+</head>
+<body>
+ <h1>Read file example</h1>
+ <input type="file" id="fileInput">
+ <pre id="fileDisplayArea"></pre>
+ <!--<div id="fileDisplayArea"></div> -->
+
+ <script>
+     window.onload = function() {
+         var fileInput = document.getElementById('fileInput');
+         var fileDisplayArea = document.getElementById('fileDisplayArea');
+
+
+         fileInput.addEventListener('change',function() {
+             var file = fileInput.files[0];
+             var fileType = /text.*/;
+             //var fileType = /image.*/;
+
+             if (file.type.match(fileType)) {
+                 var reader = new FileReader();
+
+                 reader.onload = function() {
+                     fileDisplayArea.innerText = reader.result;
+                     //fileDisplayArea.innerHTML = "";
+
+                     //create a new image
+                     //var image = new Image();
+                     //set the image src property using the data URL
+                     //image.src = reader.result;
+                     //add the image to the page
+                     //fileDisplayArea.appendChild(image);
+                }
+                 reader.readAsText(file);
+                 //reader.readAsDataURL(file);
+                 //reader.readAsBinaryString(file);
+                 //reader.readAsArrayBuffer(file);
+
+            }    else {
+                 fileDisplayArea.innerText = 'File type not supported';
+             }
+
+        });
+     }
+
+
+
+
+
+ </script>
+
+</body>
+</html>
