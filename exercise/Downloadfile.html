@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Receive and download</title>
+</head>
+<body>
+ <h1>Receive a file and download from another peer</h1>
+ <div>
+     Received data:
+     <pre id="fileDisplayArea"></pre>
+ </div>
+ <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+ <script src="http://danml.com/js/download.js"></script>
+ <script src="peer.js"></script>
+ <script src="download.js"></script>
+ <script>
+     window.onload = function(){
+         var fileDisplayArea = document.getElementById('fileDisplayArea');
+
+         //create PeerJs object receive connection
+         var peer = new Peer('999', {key: 's2ad2nr1v1x7p66r', debug: 3});
+
+         peer.on('open', function(){
+             console.log(peer.id);
+
+         });
+
+         //receive the connection from another peer
+
+         //Emitted when a new data connection is established from a remote peer
+         peer.on('connection',function(conn){
+             //Set listeners for data connection events.
+             //Emitted when the connection is established and ready-to-use.
+             conn.on('open', function(){
+
+                 //receive data
+                 //Emitted when data is received from the remote peer.
+                 conn.on('data', function(data){
+                    // console.log(data);
+                     if (data) {
+                         fileDisplayArea.innerText = data;
+                         console.log(data.byteLength);
+                         var file = JSON.parse(data);
+                         //console.log(file.content);
+                         //var myStringView = StringView.makeFromBase64(file.content);
+                         download(file.content,file.fileName, file.fileType);
+                     }
+                 });
+             });
+
+         });
+     }
+ </script>
+
+</body>
+</html>
