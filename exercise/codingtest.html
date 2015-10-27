@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>coding test</title>
+</head>
+<body>
+<h1>Coding Test</h1>
+<div>
+    Select the file:
+    <input type="file" id="fileInput">
+</div>
+<script src="kodo.js"></script>
+<script src="download.js"></script>
+<script>
+   var kodo = Module;
+    window.onload = function(){
+        var dataIn , dataOut;
+        var fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('change',function(){
+            var file = fileInput.files[0];
+            var reader = new FileReader;
+
+            reader.onload = function(){
+                dataIn  = reader.result;
+                coding(dataIn);
+
+            }
+            reader.readAsBinaryString(file);
+
+
+        });
+
+        function coding(dataIn){
+            var symbols = 8, symbolSize = 100;
+
+            encoder_factory = new kodo.encoder_factory(symbols,symbolSize);
+            encoder = encoder_factory.build();
+
+            decoder_factory = new kodo.decoder_factory(symbols,symbolSize);
+            decoder = decoder_factory.build();
+
+            encoder.set_systematic_off();
+            encoder.set_const_symbols(dataIn);
+            var packetsNumber = 0;
+            while(!decoder.is_complete())
+            {
+                packet = encoder.write_payload();
+                packetsNumber += 1;
+                console.log(packet);
+                console.log(packetsNumber);
+                decoder.read_payload(packet);
+            }
+            dataOut = decoder.copy_from_symbols();
+            //download(dataOut);
+            console.log(dataOut);
+            if (dataOut == dataIn){
+                console.log('decode correct');
+            }
+        }
+
+
+    }
+
+</script>
+
+</body>
+</html>
