@@ -23,46 +23,59 @@
         //create PeerJs object receive connection
         var peer = new Peer('100', {host:'localhost', port:9000, debug:3});
         var socket = io.connect('http://localhost:8000');
+        roundReceive();
 
-        peer.on('open', function(){
-            console.log(peer.id);
+        function roundReceive(){
 
-        });
+            peer.on('open', function(){
+                console.log(peer.id);
 
-        //receive the connection from another peer
-
-        //Emitted when a new data connection is established from a remote peer
-        peer.on('connection',function(conn){
-            i += 1;
-            console.log(i);
-            //Set listeners for data connection events.
-            //Emitted when the connection is established and ready-to-use.
-            conn.on('open', function(){
-
-                //receive data
-                //Emitted when data is received from the remote peer.
-                conn.on('data', function(data){
-                    // console.log(data);
-                    fileDisplayArea.innerText = data;
-                    console.log(data.byteLength);
-                    result.push(data);
-                    //download(file.content,file.fileName, file.fileType);
-                    console.log(result);
-//                    if (result.length===4){
-//                        //console.log(result);
-//                        setTimeout(sendSign(result),500);
-//                    }
-                });
             });
-            if (result.length===4){
-                //console.log(result);
-                setTimeout(sendSign(result),500);
-            }
 
-        });
+            //receive the connection from another peer
+
+            //Emitted when a new data connection is established from a remote peer
+            peer.on('connection',function(conn){
+                i += 1;
+                console.log(i);
+                //Set listeners for data connection events.
+                //Emitted when the connection is established and ready-to-use.
+                conn.on('open', function(){
+
+                    //receive data
+                    //Emitted when data is received from the remote peer.
+                    conn.on('data', function(data){
+                        // console.log(data);
+                        fileDisplayArea.innerText = data;
+                        console.log(data.byteLength);
+                        result.push(data);
+                        //download(file.content,file.fileName, file.fileType);
+                        console.log(result);
+                        conn.close();
+                        if (result.length===3){
+                            //console.log(result);
+                            setTimeout(sendSign(result),500);
+
+
+
+                        }
+                    });
+                });
+//            if (i===3){
+//                //console.log(result);
+//                setTimeout(sendSign(result),500);
+//                result = [];
+//                i = 0;
+//            }
+
+            });
+        }
+
 
         function sendSign(result){
             console.log('result'+result);
+            result = [];
+            i = 0;
             socket.emit('nextRound','true');
         }
 

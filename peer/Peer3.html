@@ -51,8 +51,14 @@
 //                }
 //            });
 
-        });
+            socket.on('newid',function(newId){
+                console.log(newId);
+                //newID = newId;
+                connectPeer(newId);
+                connectPeer(100);
+            });
 
+        });
 
         function choose(){
             socket.on('choice', function(number){
@@ -64,39 +70,22 @@
 
         }
 
-        function nextRound(){
-            peerState();
-            console.log('newid'+id);
-        }
-
         function peerState(){
-            //var peerFailRate = 0.33;
-            var newID;
             if (peerChoice == 3){
-                peer.destroy();
-                socket.disconnect();
-                socket.connect();
-                //socket = io.connect('http://localhost:8000');
-                //socket.socket.reconnect();
-                newID = id + peerNumber;
-                socket.emit('peerid', newID);
-                fileData = null;
-                receiveConnection(newID);
-                id = newID;
-                peerChoice = 0;
+                window.open('http://localhost:63342/examples/videochat/NewPeer.html?peerSign='+3);
+                window.close();
 
             }
 
-            else{
-                socket.on('newid',function(newId){
-                    console.log(newId);
-                    //newID = newId;
-                    connectPeer(newId);
-                    connectPeer(100);
-                });
+//                socket.on('newid',function(newId){
+//                    console.log(newId);
+//                    //newID = newId;
+//                    connectPeer(newId);
+//                    connectPeer(100);
+//                });
                //connectPeer(100);
 
-            }
+
         }
 
 
@@ -140,7 +129,7 @@
             var conn = peer.connect(newId);
             conn.on('open', function(){
                 conn.send(fileData);
-               // conn.close();
+                //setTimeout(conn.close(),500);
             },false);
 
 

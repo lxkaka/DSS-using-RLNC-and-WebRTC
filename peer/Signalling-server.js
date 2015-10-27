@@ -11,9 +11,18 @@ io.sockets.on('connection',function(socket) {
     //console.log(socket.id);
     console.log('length'+io.sockets.sockets.length);
     if (i===peerNumber+1) {
-        //broadcast to all connected clients
+        //broadcast start sign to all connected clients
         io.sockets.emit('start','go');
-        io.sockets.emit('choice',Math.ceil(Math.random()*3));
+        //broadcast new id to all peers
+        io.sockets.emit('choice', Math.ceil(Math.random()*3));
+    }
+    //if(i===peerNumber+2){
+    //    //new peer join then broadcast new id to all peers
+    //    io.sockets.emit('newid',i+100);
+    //}
+    if(i>peerNumber+1){
+        //new peer join then broadcast new id to all peers
+        io.sockets.emit('newid',i+100);
     }
 
     //    io.sockets.emit('choice',Math.ceil(Math.random()*3));
@@ -24,10 +33,10 @@ io.sockets.on('connection',function(socket) {
         if (sign === 'true') {
             nextSign = true;
             console.log(nextSign);
-            if (i>4 && i<7){
+            if (i<6){
                 // broadcast to all except the current sender
-                //socket.broadcast.emit('nextRound','true');
                 socket.broadcast.emit('choice', Math.ceil(Math.random()*3));
+                //socket.broadcast.emit('newid',i+101);
             }
 
         }

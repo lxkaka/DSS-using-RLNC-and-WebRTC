@@ -67,6 +67,13 @@
 //                }
 //            });
 
+            socket.on('newid',function(newId){
+                console.log(newId);
+                //newID = newId;
+                connectPeer(newId);
+                connectPeer(100);
+            });
+
 
         });
 
@@ -94,34 +101,38 @@
             //var peerFailRate = 0.33;
             var newID;
             if (peerChoice == 1){
-                peer.destroy();
-                socket.disconnect();
-                socket.connect();
-                //socket.socket.reconnect();
+                window.open("http://localhost:63342/examples/videochat/NewPeer.html?peerSign="+1);
+//                peer.destroy();
+//                socket.disconnect();
+//                socket.connect();
+
                 //generate new id and send this id to the server
-                newID = id + peerNumber;
+//                newID = id + peerNumber;
                 //send the new id to the server
-                socket.emit('peerid', newID);
-                fileData = null;
-                //new construct a peer and receive the data from other peer
-                receiveConnection(newID);
-                id = newID;
-                peerChoice = 0;
+//                socket.emit('peerid', newID);
+//                fileData = null;
+//                //new construct a peer and receive the data from other peer
+//                receiveConnection(newID);
+//                id = newID;
+//                peerChoice = 0;
+                window.close();
+
+
 
 
             }
 
 
-            else{
-                //listen the new comer's id
-                socket.on('newid',function(newId){
-                    console.log(newId);
-                    //newID = newId;
-                    connectPeer(newId);
-                    connectPeer(100);
-                });
-               //connectPeer(100);
-            }
+//            else{
+//                //listen the new comer's id
+//                socket.on('newid',function(newId){
+//                    console.log(newId);
+//                    //newID = newId;
+//                    connectPeer(newId);
+//                    connectPeer(100);
+//                });
+//               //connectPeer(100);
+//            }
         }
 
         // generate new peer, listen connection from other peers
@@ -169,6 +180,7 @@
             var conn = peer.connect(newId);
             conn.on('open', function(){
                 conn.send(fileData);
+                //setTimeout(conn.close(),500);
             },false);
 
         }
