@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bubble Catch</title>
+    <style type="text/css">
+        canvas{
+            border: solid 1px;
+            position: absolute;
+            left: 250px;
+            top: 100px;
+            background-color: black;
+        }
+    </style>
+</head>
+<body style="background-color: rgba(187,255,255,0.3)">
+<h1>Bubble Catch Simple Demon</h1>
+<canvas id="canvas" width="600" height="400"></canvas>
+<button onclick="addBubble()" style="background-color: black;color: white;position: absolute;left: 100px;top: 100px;width: 52px">Add</button>
+<button onclick="initial()" style="background-color: black;color: white;position: absolute;left: 500px;top: 50px;width: 52px">Start</button>
+<button onclick="removeBubble()" style="background-color: black;color: white;position: absolute;left: 100px;top: 500px;width: 52px">Delete</button>
+<button onclick="speedUp()" style="background-color: black;color: white;position: absolute;left: 1000px;top: 100px;border-radius: 30px">Speed Up</button>
+<button onclick="speedCut()" style="background-color: black;color: white;position: absolute;left: 1000px;top: 500px;border-radius: 30px">Speed Cut</button>
+
+
+<script src="BubbleGenerator.js"></script>
+
+</body>
+</html>
