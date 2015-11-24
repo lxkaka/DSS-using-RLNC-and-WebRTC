@@ -4,7 +4,9 @@
 var PeerServer = require('peer').PeerServer;
 var server = PeerServer({port: 9000, path: '/'});
 var io = require('socket.io').listen(8000);
-var i= 0, peerNumber = 3, nextSign;
+var i= 0, peerNumber = 10, round = 10,nextSign,peerSign;
+var parentNumber = 7;
+
 io.sockets.on('connection',function(socket) {
     i += 1;
     console.log(i);
@@ -13,8 +15,9 @@ io.sockets.on('connection',function(socket) {
     if (i===peerNumber+1) {
         //broadcast start sign to all connected clients
         io.sockets.emit('start','go');
-        //broadcast new id to all peers
-        io.sockets.emit('choice', Math.ceil(Math.random()*3));
+        //broadcast peer sign to all peers
+        peerSign = Math.ceil(Math.random()*peerNumber);
+        io.sockets.emit('choice', peerSign);
     }
     //if(i===peerNumber+2){
     //    //new peer join then broadcast new id to all peers
@@ -23,6 +26,8 @@ io.sockets.on('connection',function(socket) {
     if(i>peerNumber+1){
         //new peer join then broadcast new id to all peers
         io.sockets.emit('newid',i+100);
+        console.log('new id '+(i+100));
+        chooseParent();
     }
 
     //    io.sockets.emit('choice',Math.ceil(Math.random()*3));
@@ -33,9 +38,10 @@ io.sockets.on('connection',function(socket) {
         if (sign === 'true') {
             nextSign = true;
             console.log(nextSign);
-            if (i<6){
+            if (i<=round+peerNumber){
                 // broadcast to all except the current sender
-                socket.broadcast.emit('choice', Math.ceil(Math.random()*3));
+                peerSign = Math.ceil(Math.random()*peerNumber);
+                socket.broadcast.emit('choice', peerSign);
                 //socket.broadcast.emit('newid',i+101);
             }
 
@@ -58,6 +64,20 @@ io.sockets.on('connection',function(socket) {
 
 
 });
+
+
+function chooseParent(){
+    var parentArray = [1,2,3,4,5,6,7,8,9,10];
+    //delete the disconnected peer
+    parentArray.splice(peerSign-1,1);
+    for(var j=0;j<parentNumber;j++){
+        choice = Math.floor(Math.random()*parentArray.length);
+        io.sockets.emit('parentChoose',parentArray[choice]);
+        //delete the chosen peer, prevent duplicated choose
+        parentArray.splice(choice,1);
+
+    }
+}
 
 
 

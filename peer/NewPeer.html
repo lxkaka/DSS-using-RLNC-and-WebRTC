@@ -8,13 +8,19 @@
 <body>
 <script src="http://cdn.socket.io/socket.io-1.3.7.js"></script>
 <script src="peer.js"></script>
+<script src="kodo.js"></script>
 <script type="text/javascript">
+    var kodo = Module
     window.onload = function(){
         var socket = io.connect('http://localhost:8000');
         console.log('new peer join');
-        var peerSign = getUrlVars()['peerSign'];
+        var peerSign = parseInt(getUrlVars()['peerSign']);
+        var Q = parseInt(getUrlVars()['Q']),symbols = parseInt(getUrlVars()['symbols']);
+        var symbolSize = parseInt(getUrlVars()['symbolSize']),parentNumber = parseInt(getUrlVars()['parentNumber']);
+        console.log('Parameter Q='+Q);
         console.log('peerSign '+peerSign);
-        var peerNumber = 3, peerChoice = 0;
+        //console.log(symbols,symbolSize);
+        var peerNumber = 10, peerChoice = 0;
         var id=0, peer,fileData;
 
         socket.on('newid',function(newid){
@@ -24,10 +30,14 @@
 
             }
             else{
-                console.log('new id'+ newid);
-                //newID = newId;
-                connectPeer(newid);
+                console.log('The new peer id '+ newid);
                 connectPeer(100);
+                socket.on('parentChoose',function(parentSign){
+                    console.log('parentSign '+parentSign);
+                    if(peerSign === parentSign){
+                        connectPeer(newid);
+                    }
+                });
             }
         });
 
@@ -36,9 +46,10 @@
             peerChoice = number;
             console.log('peerChoice '+ peerChoice);
             peerState();
-            console.log('cureentid' + id);
+            console.log('The current id ' + id);
         });
 
+        // parse url
         // Read a page's GET URL variables and return them as an associative array.
         function getUrlVars()
         {
@@ -56,7 +67,7 @@
 
         function peerState(){
             if (peerChoice == peerSign){
-                window.open('http://localhost:63342/examples/videochat/NewPeer.html?peerSign='+peerSign);
+                window.open('http://localhost:63342/examples/videochat/NewPeer.html?peerSign='+peerSign+'&Q='+Q+'&symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber);
                 window.close();
 
             }
@@ -86,21 +97,50 @@
                 console.log('connection ' + i);
                 conn.on('open', function () {
                     conn.on('data', function (data) {
-                        peerData.push(data);
-                        // new fileData is peerData of last round
-                        fileData = peerData;
-                        console.log(peerData);
-//                        if (i=== peerNumber-1){
-//                            connectPeer(100);
-//                        }
-                if(fileData[1]){
-                    connectPeer(100);
-                }
+                        for(var i=0;i<data.length;i++){
+                            peerData.push(data[i]);
+                            if(peerData.length === Q*parentNumber){
+                                console.log('Peer data:');
+                                console.log(peerData);
+                                //decoding(peerData);
+                                recoding(peerData);
+                            }
+                        }
+                        //peerData.push(data);
 
 
                     });
                 });
             });
+        }
+
+        function recoding(data){
+            //here symbols means the parameter Q
+            //var symbols = 9, symbolSize = 400;
+            var recodedData = [];
+            decoder_factory = new kodo.decoder_factory(symbols,symbolSize);
+            decoder = decoder_factory.build();
+
+            for(var i=0;i<data.length;i++){
+                // pass received packet to decoder
+                decoder.read_payload(data[i]);
+
+                //Now produce a new recoded packet from the current
+                //decoding buffer, and place it into the payload buffer
+                packet = decoder.write_payload();
+                recodedData.push(packet);
+
+            }
+            console.log('Recoded data:');
+            console.log(recodedData);
+            decoding(recodedData);
+
+            // only store Q packets into the peer(cloud node)
+            fileData = recodedData.slice(0,Q);
+            //send the Q segments to collector
+            connectPeer(100);
+
+
         }
 
         function connectPeer(Id){
@@ -112,6 +152,24 @@
             },false);
 
         }
+
+
+        function decoding(data){
+            //var symbols = 9, symbolSize = 400;
+
+            decoder_factory = new kodo.decoder_factory(data.length,symbolSize);
+            decoder = decoder_factory.build();
+
+            for(var i=0; i<data.length;i++){
+                decoder.read_payload(data[i]);
+                console.log(decoder.rank()+'/'+ decoder.symbols());
+
+            }
+            dataOut = decoder.copy_from_symbols();
+            console.log(dataOut);
+
+        }
+
     }
 
 </script>
