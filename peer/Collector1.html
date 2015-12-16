@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Collector</title>
+    <link rel="stylesheet" type="text/css" href="engine.css">
+</head>
+<body style="background-color: rgba(187,255,255,0.2)">
+<h1 name="collector">Collector: verify the retrieve</h1>
+<div id="selectFile">
+    Source file:
+    <input type="file" id="fileInput">
+</div>
+<div id="dataShow">
+    <p>Decoded data:</p>
+    <pre id="fileDisplayArea"></pre>
+
+</div>
+
+<div id="state">
+    Retrieve state: <span id="decodeState"></span>
+    <div id="count">Round count: <span id="roundCount"></span></div>
+</div>
+
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+<script src="http://cdn.socket.io/socket.io-1.3.7.js"></script>
+<script src="peer.js"></script>
+<script src="kodo.js"></script>
+<script src="diff.js"></script>
+<script>
+    var kodo = Module;
+
+    // parse url
+    // Read a page's GET URL variables and return them as an associative array.
+    function getUrlVars()
+    {
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for(var i = 0; i < hashes.length; i++)
+        {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    }
+    var Q = parseInt(getUrlVars()['Q']), symbols = parseInt(getUrlVars()['symbols']),symbolSize = parseInt(getUrlVars()['symbolSize']);
+    var codingChoose = parseInt(getUrlVars()['codingChoose']);
+    var peerNumber = 10, dataIn, dataOut, dataBlob = [];
+
+    window.onload = function(){
+
+        var fileDisplayArea = document.getElementById('fileDisplayArea');
+        var decodeState = $("#decodeState");
+        var result = [];
+        var roundCount = 0,connectCount=0;
+
+        //create PeerJs object receive connection
+        var tPeer = new Peer('98', {host:'localhost', port:9000, debug:3});
+        sourceReceive();
+        var peer = new Peer('100', {host:'localhost', port:9000, debug:3});
+        var socket = io.connect('http://localhost:8000');
+        roundReceive();
+
+
+
+        function sourceReceive(){
+            tPeer.on('open' , function(){
+                console.log('temporary id '+tPeer.id);
+            });
+            tPeer.on('connection',function(conn){
+                conn.on('open',function(){
+                    conn.on('data',function(data){
+                        dataBlob = data;
+                        console.log('source data:');
+                        console.log(dataBlob);
+                    });
+                });
+            });
+        }
+
+
+
+
+        function roundReceive(){
+
+            peer.on('open', function(){
+                console.log(peer.id);
+
+            });
+
+            //receive the connection from another peer
+
+            //Emitted when a new data connection is established from a remote peer
+            peer.on('connection',function(conn){
+                connectCount += 1;
+                console.log(connectCount);
+                //Set listeners for data connection events.
+                //Emitted when the connection is established and ready-to-use.
+                conn.on('open', function(){
+
+                    //receive data
+                    //Emitted when data is received from the remote peer.
+                    conn.on('data', function(data){
+                        for(var i=0;i<data.length;i++){
+                            result.push(data[i]);
+                        }
+                        //download(file.content,file.fileName, file.fileType);
+                        console.log('coded data array: ');
+                        console.log(result);
+                        conn.close();
+//                        if(connectCount === 11 && !(dataBlob.length)){
+//                            originalData();
+//                        }
+                        //dealResult();
+
+
+                        if (result.length===Q*peerNumber){
+                            if(codingChoose === 1){
+                                decoding(result);
+                            }
+                            else if(codingChoose === 0){
+                                fileDisplayArea.textContent = result.join();
+                                verifyData();
+
+                            }
+
+
+                        }
+                        else if(result.length<Q*peerNumber){
+                            $('#decodeState').css({'color':'red'});
+                            decodeState.text(' Received coded packets not enough');
+
+                        }
+
+                    });
+                });
+
+            });
+        }
+
+        function originalData(){
+            if(codingChoose === 1){
+                dataIn = result.shift();
+                console.log('dataIn '+dataIn);
+            }
+            else if(codingChoose === 0){
+                for(var i=0;i<symbols;i++){
+                    dataBlob.push(result.shift());
+                    //console.log(dataBlob);
+                }
+                console.log(dataBlob);
+            }
+
+        }
+
+        function dealResult(){
+            if (result.length===Q*peerNumber){
+                if(codingChoose === 1){
+                    decoding(result);
+                }
+                else if(codingChoose === 0){
+                    fileDisplayArea.textContent = result.join();
+                    verifyData();
+
+                }
+
+
+            }
+            else if(result.length<Q*peerNumber){
+                $('#decodeState').css({'color':'red'});
+                decodeState.text(' Received coded packets not enough');
+
+            }
+        }
+
+
+        socket.on('close',function(sign){
+            if(sign === 'true'){
+                socket.emit('closeConfirm');
+                window.close();
+            }
+
+        });
+
+
+        function sendSign(){
+            //console.log('result'+result);
+            result = [];
+            connectCount = 0;
+            socket.emit('nextRound','true');
+        }
+
+        function decoding(data){
+            //var symbols = 9, symbolSize = 400;
+
+            decoder_factory = new kodo.decoder_factory(symbols,symbolSize);
+            decoder = decoder_factory.build();
+
+            for(var i=0; i<data.length;i++){
+                decoder.read_payload(data[i]);
+                console.log(decoder.rank()+'/'+ decoder.symbols());
+
+            }
+            dataOut = decoder.copy_from_symbols();
+            fileDisplayArea.innerText = dataOut;
+            verifyDecode(dataIn);
+
+        }
+
+        function verifyDecode(dataIn){
+            roundCount += 1;
+            $('#roundCount').text(roundCount);
+            var diff = JsDiff.diffWords(dataOut,dataIn);
+            console.log('compare result:');
+            console.log(diff);
+            if(diff.length<3 && diff.length>0) {
+                socket.emit('end','true');
+                $('#decodeState').css({'color': '#32cd32'});
+                decodeState.text('Decode correct, retrieve source file success!!! :)');
+                sendSign()
+            }
+
+            else{
+                $('#decodeState').css({'color':'red'});
+                decodeState.text('Problem occurs');
+            }
+        }
+
+        function verifyData(){
+            roundCount += 1;
+            $('#roundCount').text(roundCount);
+            for(var i=0;i<dataBlob.length;i++){
+                j = $.inArray(dataBlob[i],result);
+                if(j === -1){
+                    socket.emit('end','true');
+                    console.log(i);
+                    console.log(dataBlob[i]);
+                    $('#decodeState').css({'color':'red'});
+                    decodeState.text('Retrieve fail :(');
+                    break;
+                }
+                else if(i === dataBlob.length-1){
+                    $('#decodeState').css({'color': '#32cd32'});
+                    decodeState.text('Retrieve source file success!!! :)');
+                    sendSign();
+
+                }
+            }
+        }
+
+        function readFile(){
+            var file = $('#fileInput')[0].files[0];
+            var reader = new FileReader;
+            reader.onload = function(){
+                dataIn = reader.result;
+                //verifyDecode(dataIn);
+
+            }
+            reader.readAsBinaryString(file);
+
+        }
+
+
+        function readBlob(){
+            var file = fileInput.files[0];
+            var blobSize = file.size / symbols, blob;
+            var start = 0,stop = blobSize;
+
+            for(var i= 0;i<symbols;i++){
+                var reader = new FileReader;
+                //debugger;
+                blob = file.slice(start,stop);
+                //console.log(blob);
+
+                reader.onload = function(){
+                    //debugger; here use reader.result return null, but rather use this.result
+                    //dataIn  = reader.result;
+                    dataBlob.push(this.result);
+
+                }
+                reader.readAsBinaryString(blob);
+
+                start = stop;
+                stop = stop + blobSize;
+
+            }
+
+        }
+
+    }
+
+
+</script>
+
+</body>
+</html>

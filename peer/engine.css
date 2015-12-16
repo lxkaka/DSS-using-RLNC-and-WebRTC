@@ -1,0 +1,62 @@
+/*默认情况下，<pre /> 标签中的内容若超出范围不会自动换行,*/
+/*解决办法，提前声明如下*/
+h1{
+    position: absolute;
+    left: 400px;
+}
+h1[name='collector']{
+    position: absolute;
+    left: 370px;
+}
+#selectFile{
+    position: absolute;
+    left: 260px;
+    top: 225px;
+}
+#dataShow{
+    position: absolute;
+    left: 260px;
+    top: 260px;
+}
+pre{
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+#fileDisplayArea{
+    width: 620px;
+    height: 290px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border: 8px ridge;
+}
+#parameter{
+    position: absolute;
+    left: 260px;
+    top: 100px;
+}
+p{
+    position: relative;
+}
+#codingChoose{
+    position: absolute;
+    left: 600px;
+    top: 80px;
+}
+input[type="text"]{
+    width: 80px;
+}
+#state{
+    position: absolute;
+    left: 260px;
+    top: 100px;
+}
+
+#roundCount{
+    color: blue;
+    font-size: x-large;
+    font-weight: bold;
+}
+#count{
+    position: absolute;
+    top: 60px;
+}

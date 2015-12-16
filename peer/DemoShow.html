@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Demo show</title>
+    <style type="text/css">
+        #newPeer{
+            position: absolute;
+            left: 1000px;
+            top: 100px;
+            font-weight: bolder;
+        }
+        #parentPeer{
+            position: absolute;
+            left: 1000px;
+            top: 360px;
+            font-weight: bolder;
+        }
+        #roundCount{
+            position: absolute;
+            left: 150px;
+            top: 70px;
+            color: orangered;
+            font-size: xx-large;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body style="background-color: rgba(187,255,255,0.2)">
+<h1>System Model Animate Demo </h1>
+<div id="newPeer"><li>New Peer:</li></div>
+<div id="parentPeer"><li>Parent Peer:</li></div>
+<p><li>Round count: &nbsp;</li></li><span id="roundCount"></span></p>
+<div id="holder"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+<script src="http://cdn.socket.io/socket.io-1.3.7.js"></script>
+<script src="raphael.js"></script>
+<script>
+    window.onload = function(){
+        // connect to the server to update state
+        var socket = io.connect('http://localhost:8000');
+        var peerChoice, parentSign;
+        var peerPath, collectorPath;
+        var roundCount = 0;
+
+        socket.on('start',function(sign){
+            if(sign =='go'){
+                run();
+            }
+        });
+
+        socket.on('choice', function(number){
+            roundCount += 1;
+            $('#roundCount').text(roundCount);
+            peerChoice = number;
+            console.log('peerChoice '+ peerChoice);
+            console.log('peerPath '+peerPath);
+            if(peerChoice){
+                if(peerSet){
+                    peerSet.forEach(function(element,index){
+                        element.remove();
+                    })
+                }
+                nodeList[peerChoice-1].update();
+                drawPeerSign(peerChoice,nodeList[peerChoice-1].color);
+            }
+            if(peerChoice && peerPath){
+                pathSet.forEach(function(element,index){
+                    element.remove();
+                });
+
+            }
+        });
+
+
+        socket.on('parentChoose',function(number){
+            parentSign = number;
+            console.log('parentSign '+parentSign);
+            if( parentSign){
+                if(parentSet){
+                    parentSet.forEach(function(element,index){
+                        element.remove();
+                    })
+                }
+                drawParentSign(parentSign,nodeList[parentSign-1].color);
+                nodeList[parentSign-1].connect(nodeList[peerChoice-1]);
+            }
+        });
+
+        var sourceNode, collectorNode, nodeList = [];
+        var r = Raphael('holder', 1200 , 600);
+        var pathSet = r.set(), peerSet = r.set(), parentSet = r.set();
+
+
+        // constructor name in upper case
+        function Node(x,y,radius,color,text){
+            this.element = r.set();
+            this.x = x;
+            this.y = y;
+            this.radius = radius;
+            this.color = color;
+            this.text = text;
+            this.draw = function(){
+                this.element.push(r.circle(x,y,radius).attr({fill: 'none', stroke: this.color, 'stroke-width': 2}));
+                this.element.push(r.text(x,y,text).attr({'font-size': 20 , fill: this.color}));
+
+            }
+
+            this.addPath = function(){
+                var xS = sourceNode.x, yS = sourceNode.y + sourceNode.radius;
+                var xC = collectorNode.x, yC = collectorNode.y - collectorNode.radius;
+                var x1 = x, y1 = y - radius, y2 = y + radius;
+                this.element.push(r.path(['M',xS,yS,'L',x1,y1]).attr({'arrow-end': 'block-wide-long'}));
+                this.element.push(r.path(['M',x1,y2,'L',xC,yC]).attr({'arrow-end': 'classic-wide-long'}));
+
+            }
+
+            this.update = function(){
+                this.color = Raphael.getColor();
+                this.element.forEach(function(element,index){
+                    element.remove();
+                });
+                this.draw();
+
+            }
+
+            this.connect = function(aimNode){
+                // 1 is start point, 2 is control point, 3 is end point
+                // here x,y are absolute distance
+                var xC = collectorNode.x, yC = collectorNode.y - collectorNode.radius;
+                var x1 = x, y1 = y - radius, x3 = aimNode.x, y3 = y1, d = x3 - x1;
+                var x2 = x + d/2;
+                if(d>0){var y2 = y1 - d/4}
+                else{y2 = y1 + d/4}
+                peerPath = r.path(['M',x1,y1,'Q',x2,y2,x3,y3]).attr({'arrow-end': 'open-wide-long' , stroke: this.color});
+                pathSet.push(peerPath);
+                collectorPath = r.path(['M',x3,y3+2*radius,'L',xC,yC]).attr({'arrow-end': 'classic-wide-long' , stroke: aimNode.color});
+
+            }
+
+
+        }
+
+
+        function generateNodes(){
+            // source node
+            sourceNode = new Node(520,40,30,'black','S');
+            sourceNode.draw();
+
+            // storage nodes
+            var x = 200, y = 300;
+            for(var i=1;i<=10;i++){
+                var color = Raphael.getColor();
+                var node = new Node(x,y,20,color,i);
+                nodeList.push(node);
+                x += 80;
+            }
+
+            // collector node
+            collectorNode = new Node(520,550,30,'black','C');
+            collectorNode.draw();
+
+        }
+
+        function drawPeerSign(text,color){
+            peerSet.push(r.circle(1040, 140,20).attr({fill: 'none', stroke: color, 'stroke-width': 2}));
+            peerSet.push(r.text(1040,140,text).attr({'font-size': 20, fill: color}));
+
+
+        }
+
+        function drawParentSign(text,color){
+            parentSet.push(r.circle(1040, 400,20).attr({fill: 'none', stroke: color, 'stroke-width': 2}));
+            parentSet.push(r.text(1040,400,text).attr({'font-size': 20, fill: color}));
+
+
+        }
+
+        function run(){
+            generateNodes();
+            for(var i=0;i<nodeList.length;i++){
+                nodeList[i].draw();
+                nodeList[i].addPath();
+
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+</script>
+
+</body>
+</html>

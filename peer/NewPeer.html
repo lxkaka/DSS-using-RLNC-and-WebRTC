@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NewPeer</title>
+</head>
+<h1>New peer joined</h1>
+<body>
+<script src="https://cdn.socket.io/socket.io-1.3.7.js"></script>
+<script src="peer.js"></script>
+<script src="kodo.js"></script>
+<script type="text/javascript">
+    var kodo = Module
+    window.onload = function(){
+        var socket = io.connect('http://localhost:8000');
+        console.log('new peer join');
+        var peerSign = parseInt(getUrlVars()['peerSign']);
+        var Q = parseInt(getUrlVars()['Q']),symbols = parseInt(getUrlVars()['symbols']);
+        var symbolSize = parseInt(getUrlVars()['symbolSize']),parentNumber = parseInt(getUrlVars()['parentNumber']);
+        var codingChoose = parseInt(getUrlVars()['codingChoose']);
+
+        console.log('Parameter Q='+Q);
+        console.log('peerSign '+peerSign);
+        //console.log(symbols,symbolSize);
+        var peerNumber = 10, peerChoice = 0;
+        var id=0, newID, peer,fileData, parentSign;
+
+        socket.on('newid',function(newid){
+            if(!id) {
+                id = newid;
+                receiveConnection(id);
+
+            }
+            else{
+                newID = newid;
+                console.log('The new peer id '+ newid);
+                connectPeer(100);
+
+            }
+        });
+
+        socket.on('parentChoose',function(number){
+            parentSign = number;
+            console.log('parentSign '+parentSign);
+            if(newID && peerSign === parentSign){
+                connectPeer(newID);
+            }
+        });
+
+        socket.on('choice', function(number){
+            peerChoice = number;
+            console.log('peerChoice '+ peerChoice);
+            peerState();
+            console.log('The current id ' + id);
+        });
+
+        socket.on('close',function(sign){
+            if(sign === 'true'){
+                socket.emit('closeConfirm');
+                window.close();
+            }
+
+        });
+
+        // parse url
+        // Read a page's GET URL variables and return them as an associative array.
+        function getUrlVars()
+        {
+            var vars = [], hash;
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for(var i = 0; i < hashes.length; i++)
+            {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+        }
+
+
+        function peerState(){
+            if (peerChoice == peerSign){
+                window.open('http://localhost:63342/examples/videochat/NewPeer.html?peerSign='+peerSign+'&Q='+Q+'&symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
+                window.close();
+
+            }
+
+//            else{
+//                socket.on('newid',function(newId){
+//                    console.log('that new peer id'+ newId);
+//                    //newID = newId;
+//                    connectPeer(newId);
+//                    connectPeer(100);
+//                });
+//                //connectPeer(100);
+//
+//            }
+        }
+
+
+        function receiveConnection(id){
+            var peerData = [], i = 0;
+            peer = new Peer(id , {host:'localhost', port:9000, debug:3});
+
+            peer.on('open', function(){
+                console.log('this new peer id '+ peer.id);
+            });
+            peer.on('connection', function(conn) {
+                i += 1;
+                console.log('connection ' + i);
+                conn.on('open', function () {
+                    conn.on('data', function (data) {
+                        for(var i=0;i<data.length;i++){
+                            peerData.push(data[i]);
+                            if(peerData.length === Q*parentNumber){
+                                console.log('Peer data:');
+                                console.log(peerData);
+                                console.log('coding choose '+codingChoose);
+                                if(codingChoose === 1){
+                                    recoding(peerData);
+                                }
+                                else if(codingChoose === 0){
+                                    fileData = peerData.slice(0,Q);
+                                    connectPeer(100);
+
+                                }
+
+                            }
+                        }
+                        //peerData.push(data);
+
+
+                    });
+                });
+            });
+        }
+
+        function recoding(data){
+            //here symbols means the parameter Q
+            //var symbols = 9, symbolSize = 400;
+            var recodedData = [];
+            decoder_factory = new kodo.decoder_factory(symbols,symbolSize);
+            decoder = decoder_factory.build();
+
+            for(var i=0;i<data.length;i++){
+                // pass received packet to decoder
+                decoder.read_payload(data[i]);
+
+                //Now produce a new recoded packet from the current
+                //decoding buffer, and place it into the payload buffer
+                packet = decoder.write_payload();
+                recodedData.push(packet);
+
+            }
+            console.log('Recoded data:');
+            console.log(recodedData);
+            //decoding(recodedData);
+
+            // only store Q packets into the peer(cloud node)
+            fileData = recodedData.slice(0,Q);
+            //send the Q segments to collector
+            connectPeer(100);
+
+
+        }
+
+        function connectPeer(Id){
+            //var peer = new Peer('101', {host:'localhost', port:9000, debug:3});
+            var conn = peer.connect(Id);
+            conn.on('open', function(){
+                conn.send(fileData);
+                //setTimeout(conn.close(),500);
+            });
+        }
+
+
+
+
+        function decoding(data){
+            //var symbols = 9, symbolSize = 400;
+
+            decoder_factory = new kodo.decoder_factory(data.length,symbolSize);
+            decoder = decoder_factory.build();
+
+            for(var i=0; i<data.length;i++){
+                decoder.read_payload(data[i]);
+                console.log(decoder.rank()+'/'+ decoder.symbols());
+
+            }
+            dataOut = decoder.copy_from_symbols();
+            console.log(dataOut);
+
+        }
+
+    }
+
+</script>
+
+</body>
+</html>
