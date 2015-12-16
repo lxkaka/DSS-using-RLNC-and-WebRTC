@@ -6,7 +6,7 @@
 ##main implementation:
 Source data was stored in distributed nodes,in project we use WebRTC, it menas nodes are peers (browser client). When some peers down(disconnect),we must add new peer in the system. The new peer receives data from other normal peers. And we use RLNC in new comer to recode the data. Collector receives the data from surviving peers and new peer, then decode the data to verify the retrieve success or not.
 
-# main work flow:
+##main work flow:
 1.  3 peers system without RLNC  
   there are 3 peers, 1 and 3 work well , 2 fail and generate new peer 4. 1 and 3 can send the data to 4 and send to the collector. New peer 4 also sends the received data to the collector. 
 2. 3 peers system with RLNC
