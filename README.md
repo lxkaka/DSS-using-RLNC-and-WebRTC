@@ -23,9 +23,11 @@ Source data was stored in distributed nodes,in project we use WebRTC, it menas n
 		Collector receives enough coded packets and decode. Then verify whether the retrieve successfully.
 		
 4. complete system without RLNC
+
 		Engine can choose using RLNC or using no RLNC to contine the process.
 		The data from surviving peers go in the new peer with random order. Only store the first Q segments.
 5. Loop test
+
 		At start point of the process engine sends the source data to collector(collector has a different id to receive source data). In each round if retrieve fail, collector sends 'end' sign to server, if retrieve successfully collector sends 'nextRound' sign to server. 
 		Server listen 'end' or round count == max round then this test over, close peers and collector then start next test.
 
