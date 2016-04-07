@@ -43,7 +43,8 @@
             parentSign = number;
             console.log('parentSign '+parentSign);
             if(newID && peerSign === parentSign){
-                connectPeer(newID);
+                setTimeout(function(){connectPeer(newID);},1000);
+				//connectPeer(newID);
             }
         });
 
@@ -57,7 +58,8 @@
         socket.on('close',function(sign){
             if(sign === 'true'){
                 socket.emit('closeConfirm');
-                window.close();
+                //window.close();
+				setTimeout(window.close,200);
             }
 
         });
@@ -80,7 +82,7 @@
 
         function peerState(){
             if (peerChoice == peerSign){
-                window.open('http://localhost:63342/examples/videochat/NewPeer.html?peerSign='+peerSign+'&Q='+Q+'&symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
+                window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/NewPeer.html?peerSign='+peerSign+'&Q='+Q+'&symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
                 window.close();
 
             }
@@ -119,7 +121,7 @@
                                 if(codingChoose === 1){
                                     recoding(peerData);
                                 }
-                                else if(codingChoose === 0){
+                                else if(codingChoose === 0 || codingChoose === 2){
                                     fileData = peerData.slice(0,Q);
                                     connectPeer(100);
 
@@ -137,7 +139,6 @@
 
         function recoding(data){
             //here symbols means the parameter Q
-            //var symbols = 9, symbolSize = 400;
             var recodedData = [];
             decoder_factory = new kodo.decoder_factory(symbols,symbolSize);
             decoder = decoder_factory.build();
@@ -145,20 +146,21 @@
             for(var i=0;i<data.length;i++){
                 // pass received packet to decoder
                 decoder.read_payload(data[i]);
-
-                //Now produce a new recoded packet from the current
+			}
+			
+			for(var i=0;i<Q;i++){
+				//Now produce a new recoded packet from the current
                 //decoding buffer, and place it into the payload buffer
                 packet = decoder.write_payload();
                 recodedData.push(packet);
-
-            }
+			}
+ 
             console.log('Recoded data:');
             console.log(recodedData);
-            //decoding(recodedData);
 
             // only store Q packets into the peer(cloud node)
-            fileData = recodedData.slice(0,Q);
-            //send the Q segments to collector
+            fileData = recodedData;
+            //send the first Q recoded segments to collector
             connectPeer(100);
 
 

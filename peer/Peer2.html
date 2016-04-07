@@ -64,6 +64,13 @@
                                 console.log('newid ' + id);
                             }
                         });
+						
+						socket.on('choice', function(number){
+							peerChoice = number;
+							console.log(peerChoice);
+							peerState();
+							console.log('The current id ' + id);
+						});
 
                         socket.on('newid', function (newId) {
                             console.log('The new peer id ' + newId);
@@ -76,14 +83,16 @@
                         socket.on('parentChoose',function(parentSign){
                             console.log('parentSign '+parentSign);
                             if(peerSign === parentSign){
-                                connectPeer(newID);
+								setTimeout(function(){connectPeer(newID);},500);
+                                //connectPeer(newID);
                             }
                         });
 
                         socket.on('close',function(sign){
                             if(sign === 'true'){
                                 socket.emit('closeConfirm');
-                                window.close();
+                                setTimeout(window.close,300);
+								//window.close();
                             }
 
                         });
@@ -120,7 +129,7 @@
             //var peerFailRate = 0.33;
             var newID;
             if (peerChoice == peerSign) {
-                window.open('http://localhost:63342/examples/videochat/NewPeer.html?peerSign=' +peerSign+'&Q='+Q+'&symbols='+symbols+'&symbolSize='+symbolSize+'&symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
+                window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/NewPeer.html?peerSign=' +peerSign+'&Q='+Q+'&symbols='+symbols+'&symbolSize='+symbolSize+'&symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
                 window.close();
 
             }

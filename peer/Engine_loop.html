@@ -17,17 +17,19 @@
 </div>
 <div id="parameter">
     <p>
-        Coding Parameter: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Symbols&nbsp; = &nbsp;<input type="text" id="symbols" value=20> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Symbol Size&nbsp; = &nbsp;<input type="text" id="symbolSize" value=220>
+        Coding &nbsp;Parameter:&nbsp;&nbsp;Symbols = <input type="text" id="symbols" value=20> &nbsp;&nbsp;&nbsp;&nbsp;Symbol Size&nbsp; = &nbsp;<input type="text" id="symbolSize" value=220>
     </p>
     <p>
-        Transfer Parameter: &nbsp;Redundancy&nbsp; = &nbsp;<input type="text" id="redundancy" value=4.5>  &nbsp;&nbsp;&nbsp;Parent Number&nbsp; = &nbsp;<input type="text" id="parentNumber" value=4>
-    </p>
+		Transfer Parameter: Redundancy = <input type="text" id="redundancy" value=1.5>  &nbsp;&nbsp;&nbsp;Parent Number&nbsp; = &nbsp;<input type="text" id="parentNumber" value=1>	
+    </p>  
     <button>Submit</button>
 </div>
 
 <form id="codingChoose">
-    <input type="radio" name="choose" value=1 > With RLNC
-    <input type="radio" checked="checked" name="choose" value=0 onclick="codingChange()" > Without RLNC
+    <input type="radio" name="choose" checked="checked" value=1> With RLNC
+    <input type="radio" name="choose" value=0 onclick="noCoding()"> Without RLNC
+	<input type="radio" name="choose" value=2 onclick="rsCoding()"> Reed-Solomon
+	
 </form>
 
 
@@ -41,26 +43,32 @@
     var codingChoose = parseInt($("input[name='choose'][checked]").val());
     console.log(codingChoose);
     // choose no coding
-    function codingChange(){
+    function noCoding(){
         codingChoose = 0;
         console.log(codingChoose);
     }
+	function rsCoding(){
+        codingChoose = 2;
+        console.log(codingChoose);
+    }
+	
     var socket = io.connect('http://localhost:8000'); var ncData, data = [];
     var symbols, symbolSize, redundancy, packetsNumber, Q, parentNumber;
-    var testTimes = 20, i = 0;
+	var dataIn, dataBlob = [];
+    var testTimes = 30, i = 0;
     function openWindow(){
-        window.open('http://localhost:63342/examples/videochat/Collector1.html?Q='+Q+'&symbols='+symbols+'&symbolSize='+symbolSize+'&codingChoose='+codingChoose);
-        window.open('http://localhost:63342/examples/videochat/Peer1.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
-        window.open('http://localhost:63342/examples/videochat/Peer2.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
-        window.open('http://localhost:63342/examples/videochat/Peer3.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
-        window.open('http://localhost:63342/examples/videochat/Peer4.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
-        window.open('http://localhost:63342/examples/videochat/Peer5.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
-        window.open('http://localhost:63342/examples/videochat/Peer6.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
-        window.open('http://localhost:63342/examples/videochat/Peer7.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
-        window.open('http://localhost:63342/examples/videochat/Peer8.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
-        window.open('http://localhost:63342/examples/videochat/Peer9.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
-        window.open('http://localhost:63342/examples/videochat/Peer10.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
-        //window.open('http://localhost:63342/examples/videochat/DemoShow.html');
+        window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/Collector1.html?Q='+Q+'&symbols='+symbols+'&symbolSize='+symbolSize+'&codingChoose='+codingChoose);
+        window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/Peer1.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
+        window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/Peer2.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
+        window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/Peer3.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
+        window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/Peer4.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
+        window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/Peer5.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
+        window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/Peer6.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
+        window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/Peer7.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
+        window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/Peer8.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
+        window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/Peer9.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
+        window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/Peer10.html?symbols='+symbols+'&symbolSize='+symbolSize+'&parentNumber='+parentNumber+'&codingChoose='+codingChoose);
+        //window.open('file:///C:/Users/linxi/Desktop/WebRTC-NC/DemoShow.html');
     }
 
     window.onload = function(){
@@ -81,42 +89,55 @@
         var fileInput = document.getElementById('fileInput');
         var fileDisplayArea = document.getElementById('fileDisplayArea');
         fileInput.addEventListener('change',function() {
-            debugger;
-            if (codingChoose === 1) {
+			dataDistribute();
+           
+        });
+
+        socket.on('open',function(sign){
+            i += 1;
+            if(i >= testTimes){
+                i = 0;
+                socket.emit('calculate');
+                parentNumber += 1;
+                socket.emit('parentNumber', parentNumber);
+                
+            }
+			else if(parentNumber>9 && redundancy<7){
+				i = 0;
+				redundancy += 0.5;
+				parentNumber = 1;
+				Q += 1;
+				socket.emit('parentNumber', parentNumber);
+				openWindow();
+				setTimeout(newRedundancy,3000);
+				//dataDistribute();
+			
+			}
+			
+            else if(i<testTimes && redundancy<7){
+                newTest();
+            }
+        });
+		
+		function dataDistribute(){
+			if (codingChoose === 1 || codingChoose === 2) {
                 readFile()
             }
             else if (codingChoose === 0) {
                 readBlob();
             }
-        });
-
-        socket.on('open',function(sign){
-            i += 1;
-            if(i >= testTimes && parentNumber<=9){
-//                socket.emit('calculate');
-//                parentNumber += 1;
-//                socket.emit('parentNumber', parentNumber);
-//                newTest();
-
+		}
+		
+		function newRedundancy(){
+			if (codingChoose === 1 || codingChoose === 2) {
+                sendCollector(dataIn);
+				coding(dataIn);
             }
-            else if(sign === 'true' && i<testTimes){
-                openWindow();
-                if(codingChoose === 1){
-                    setTimeout(function(){sendCollector(readFile());
-                    },1000);
-                    //sendCollector(data.slice(0,symbols));
-                    setTimeout(function(){buildPeer(ncData);
-                    },1000);
-                }
-                else if(codingChoose === 0){
-                    setTimeout(function(){sendCollector(data.slice(0,symbols));
-                    },1000);
-                    //sendCollector(data.slice(0,symbols));
-                    setTimeout(function(){buildPeer(data);
-                    },1000);
-                }
+            else if (codingChoose === 0) {
+				sendCollector(dataBlob.slice(0,symbols));
+                addRedundancy(dataBlob);
             }
-        });
+		}
 
         // read local file, use RLNC , read the entire file
         function readFile(){
@@ -128,7 +149,7 @@
                 dataIn = reader.result;
                 fileDisplayArea.textContent = dataIn;
                 //debugger;
-                //sendCollector(dataIn);
+                sendCollector(dataIn);
                 coding(dataIn);
 
 
@@ -153,6 +174,7 @@
             //to produce encoded symbols from it
             encoder.set_const_symbols(data);
 
+			packetsNumber = Math.ceil(redundancy * symbols);
             for (var i=0; i<packetsNumber; i++){
                 //Encode a packet into the payload buffer
                 packet = encoder.write_payload();
@@ -181,11 +203,11 @@
             // here peerDataLength is our parameter Q
             var peerDataLength = Math.floor(packetsNumber / peersId.length);
             //for example i = 0,1,2,4,5......
-            var i = (id-101)*peerDataLength;
+            var i = (id-101)*Q;
             var conn = peer.connect(id);
             conn.on('open',function(){
                 //send to every peer packets with peerDataLength
-                conn.send(codedData.slice(i,i+peerDataLength));
+                conn.send(codedData.slice(i,i+Q));
             });
 
         }
@@ -205,11 +227,11 @@
                 reader.onload = function(){
                     //debugger; here use reader.result return null, but rather use this.result
                     //dataIn  = reader.result;
-                    data.push(this.result);
-                    if(data.length === symbols){
-                        sendCollector(data.slice(0,symbols));
-                        fileDisplayArea.textContent = data.join();
-                        addRedundancy(data);
+                    dataBlob.push(this.result);
+                    if(dataBlob.length === symbols){
+                        sendCollector(dataBlob.slice(0,symbols));
+                        fileDisplayArea.textContent = dataBlob.join();
+                        addRedundancy(dataBlob);
                     }
 
                 }
@@ -244,19 +266,19 @@
 
         function newTest(){
             openWindow();
-            if(codingChoose === 1){
-                setTimeout(function(){sendCollector(readFile());
-                },800);
+            if(codingChoose === 1 || codingChoose === 2){
+                setTimeout(function(){sendCollector(dataIn);
+                },1000);
                 //sendCollector(data.slice(0,symbols));
                 setTimeout(function(){buildPeer(ncData);
                 },1000);
             }
             else if(codingChoose === 0){
-                setTimeout(function(){sendCollector(data.slice(0,symbols));
-                },800);
+                setTimeout(function(){sendCollector(dataBlob.slice(0,symbols));
+                },3000);
                 //sendCollector(data.slice(0,symbols));
-                setTimeout(function(){buildPeer(data);
-                },1000);
+                setTimeout(function(){buildPeer(dataBlob);
+                },4000);
             }
         }
 

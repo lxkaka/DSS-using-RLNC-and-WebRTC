@@ -6,7 +6,7 @@ var server = PeerServer({port: 9000, path: '/'});
 var io = require('socket.io').listen(8000);
 var fs = require('fs');
 var i= 0,j= 0,peerNumber = 10, round = 10,nextSign,peerSign;
-var parentNumber, roundControl = round + 11, loopTest = 1,demoShow = 2;
+var parentNumber, roundControl = round + 11, loopTest = 1,demoShow = 2; // no demo = 2, demo show = 3
 var failArray = [], successArray = [];
 
 io.sockets.on('connection',function(socket) {
@@ -85,8 +85,8 @@ io.sockets.on('connection',function(socket) {
         j += 1;
         console.log(j);
         if(j >= 10){
-            //setTimeout(emitOpen,800);
-            io.sockets.emit('open','true');
+            setTimeout(emitOpen,800);
+            //io.sockets.emit('open','true');
             j = 0;
         }
     });
@@ -94,8 +94,13 @@ io.sockets.on('connection',function(socket) {
     socket.on('calculate',function(){
         console.log('0 '+failArray.length);
         console.log('1 '+successArray.length);
-        writeResult('/Users/lxkaka/Desktop/result.txt',successArray.length/(failArray.length+successArray.length));
-        console.log('Retrieve probability = ' + (successArray.length/(failArray.length+successArray.length)));
+		numResult = successArray.length/(failArray.length+successArray.length)；
+        console.log('Retrieve probability = ' + numResult);
+        writeResult('/Users/lxkaka/Desktop/result.txt', numResult.toFixed(3));
+        failArray = [];
+        successArray = [];
+        setTimeout(emitOpen,800);
+
 
     });
 

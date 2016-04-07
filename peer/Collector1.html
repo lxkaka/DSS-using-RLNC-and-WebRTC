@@ -48,6 +48,7 @@
     var Q = parseInt(getUrlVars()['Q']), symbols = parseInt(getUrlVars()['symbols']),symbolSize = parseInt(getUrlVars()['symbolSize']);
     var codingChoose = parseInt(getUrlVars()['codingChoose']);
     var peerNumber = 10, dataIn, dataOut, dataBlob = [];
+	decoder_factory = new kodo.decoder_factory(symbols,symbolSize);
 
     window.onload = function(){
 
@@ -72,9 +73,14 @@
             tPeer.on('connection',function(conn){
                 conn.on('open',function(){
                     conn.on('data',function(data){
-                        dataBlob = data;
-                        console.log('source data:');
-                        console.log(dataBlob);
+						if(codingChoose === 1 || codingChoose === 2){
+							dataIn = data;
+						}
+						else if(codingChoose === 0){
+							dataBlob = data;
+						}                     
+                        //console.log('source data:');
+                        //console.log(data);
                     });
                 });
             });
@@ -117,7 +123,7 @@
 
 
                         if (result.length===Q*peerNumber){
-                            if(codingChoose === 1){
+                            if(codingChoose === 1 || codingChoose === 2){
                                 decoding(result);
                             }
                             else if(codingChoose === 0){
@@ -128,11 +134,11 @@
 
 
                         }
-                        else if(result.length<Q*peerNumber){
-                            $('#decodeState').css({'color':'red'});
-                            decodeState.text(' Received coded packets not enough');
+                        //else if(result.length<Q*peerNumber){
+                            //$('#decodeState').css({'color':'red'});
+                            //decodeState.text(' Received coded packets not enough');
 
-                        }
+                        //}
 
                     });
                 });
@@ -140,42 +146,7 @@
             });
         }
 
-        function originalData(){
-            if(codingChoose === 1){
-                dataIn = result.shift();
-                console.log('dataIn '+dataIn);
-            }
-            else if(codingChoose === 0){
-                for(var i=0;i<symbols;i++){
-                    dataBlob.push(result.shift());
-                    //console.log(dataBlob);
-                }
-                console.log(dataBlob);
-            }
-
-        }
-
-        function dealResult(){
-            if (result.length===Q*peerNumber){
-                if(codingChoose === 1){
-                    decoding(result);
-                }
-                else if(codingChoose === 0){
-                    fileDisplayArea.textContent = result.join();
-                    verifyData();
-
-                }
-
-
-            }
-            else if(result.length<Q*peerNumber){
-                $('#decodeState').css({'color':'red'});
-                decodeState.text(' Received coded packets not enough');
-
-            }
-        }
-
-
+		
         socket.on('close',function(sign){
             if(sign === 'true'){
                 socket.emit('closeConfirm');
@@ -188,6 +159,7 @@
         function sendSign(){
             //console.log('result'+result);
             result = [];
+			dataOut = null;
             connectCount = 0;
             socket.emit('nextRound','true');
         }
@@ -195,7 +167,7 @@
         function decoding(data){
             //var symbols = 9, symbolSize = 400;
 
-            decoder_factory = new kodo.decoder_factory(symbols,symbolSize);
+            //decoder_factory = new kodo.decoder_factory(symbols,symbolSize);
             decoder = decoder_factory.build();
 
             for(var i=0; i<data.length;i++){
@@ -216,13 +188,13 @@
             console.log('compare result:');
             console.log(diff);
             if(diff.length<3 && diff.length>0) {
-                socket.emit('end','true');
                 $('#decodeState').css({'color': '#32cd32'});
                 decodeState.text('Decode correct, retrieve source file success!!! :)');
                 sendSign()
             }
 
             else{
+				socket.emit('end','true');
                 $('#decodeState').css({'color':'red'});
                 decodeState.text('Problem occurs');
             }
