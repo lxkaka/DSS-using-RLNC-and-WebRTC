@@ -10,8 +10,11 @@ The lower part is the node loss and recovery model. In real world some storage n
 
 ##Composition:
 This is the composition of our web application includes components and structure. Our design mainly has these 5 components with different functions. Each icon in figure demonstrates the program language or technique which is used to realize the specific function. For example we use HTML5, CSS3 and javascript in Engine page, we use nodejs to realize the functions of server.
-* Engine: data distribution and parameters Input * Peer: data caching and new peer filling * New peer: data caching and recoding 
-* Collector: data collection and integrity verification * Server: signaling and connections control
+* Engine: data distribution and parameters Input 
+* Peer: data caching and new peer filling
+* New peer: data caching and recoding 
+* Collector: data collection and integrity verification 
+* Server: signaling and connections control
 ![application componets](http://7xorjs.com1.z0.glb.clouddn.com/composition.jpg)
 
 ### System model animate demo
@@ -19,7 +22,6 @@ This is the composition of our web application includes components and structure
 
 ## Performance results
 ### Recovery success probability
-![no coding](http://7xorjs.com1.z0.glb.clouddn.com/no%20nc%2050rounds.jpg) ![RS](http://7xorjs.com1.z0.glb.clouddn.com/rs%2050rounds.jpg)
-![RLNC](http://7xorjs.com1.z0.glb.clouddn.com/RLNC%2050rounds.jpg)
+![results](http://7xorjs.com1.z0.glb.clouddn.com/performance.jpg) 
 Using network coding and WebRTC in the distributed storage system can provide more effi-cient and reliable services. Our application realizes multi-platform communications and the re-sults show us clearly with the same storage cost network coding maintains more data integrity; to make use of traffic (parent number) more useful information can be protected; even for large number of rounds network coding also can achieve robust performance. In a word our work allow the system to trade-off traffic cost and storage cost while maintaining a high reliability over time.
 
